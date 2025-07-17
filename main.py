@@ -82,7 +82,7 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
 
 
 # Example usage:
-transactions = fetch_all_transactions("ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF")
+transactions = fetch_all_transactions("F2iLHPABC42YMG7uL2U7L3wAbqBqRsV1Y35M4r9oWZCw")
 processed_txs = pre_process_transaction_list(transactions)
 filtered_txns = filter_transactions_by_usd(processed_txs, 100, sol_price=SOL_PRICE)
 
@@ -103,9 +103,9 @@ for sender, currency, amount, receiver in filtered_txns:
     label = f"{float(amount):.4f} {currency.upper()})"
 
     # Add nodes if not already added
-    net.add_node(sender, label=sender , title=sender)
-    net.add_node(receiver, label=receiver , title=receiver)
-
+    net.add_node(sender, label=sender , title=sender,font={'size': 20}, url=f"https://solscan.io/account/{sender}")
+    net.add_node(receiver, label=receiver , title=receiver,font={'size': 20},url=f"https://solscan.io/account/{receiver}")
+    #for some reason the nodes arent clickable so fix it
     # Add edge with label
     net.add_edge(sender, receiver, label=label, title=label)
 
