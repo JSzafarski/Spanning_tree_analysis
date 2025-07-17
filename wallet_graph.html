@@ -1,0 +1,163 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 1200px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#97c2fc", "id": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF", "label": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF", "shape": "dot", "title": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF"}, {"color": "#97c2fc", "id": "GpMZbSM2GgvTKHJirzeGfMFoaZ8UR2X7F4v8vHTvxFbL", "label": "GpMZbSM2GgvTKHJirzeGfMFoaZ8UR2X7F4v8vHTvxFbL", "shape": "dot", "title": "GpMZbSM2GgvTKHJirzeGfMFoaZ8UR2X7F4v8vHTvxFbL"}, {"color": "#97c2fc", "id": "EBEwXmPh6LKmXP9hJijXhTvTtVCcZTHvs3b1LzRD92R", "label": "EBEwXmPh6LKmXP9hJijXhTvTtVCcZTHvs3b1LzRD92R", "shape": "dot", "title": "EBEwXmPh6LKmXP9hJijXhTvTtVCcZTHvs3b1LzRD92R"}, {"color": "#97c2fc", "id": "CCDryy329MkVzT7iYCNc6ysuenjLX3WbsPaZs1jdSNnE", "label": "CCDryy329MkVzT7iYCNc6ysuenjLX3WbsPaZs1jdSNnE", "shape": "dot", "title": "CCDryy329MkVzT7iYCNc6ysuenjLX3WbsPaZs1jdSNnE"}, {"color": "#97c2fc", "id": "CAPhoEse9xEH95XmdnJjYrZdNCA8xfUWdy3aWymHa1Vj", "label": "CAPhoEse9xEH95XmdnJjYrZdNCA8xfUWdy3aWymHa1Vj", "shape": "dot", "title": "CAPhoEse9xEH95XmdnJjYrZdNCA8xfUWdy3aWymHa1Vj"}, {"color": "#97c2fc", "id": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh", "label": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh", "shape": "dot", "title": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh"}, {"color": "#97c2fc", "id": "F2iLHPABC42YMG7uL2U7L3wAbqBqRsV1Y35M4r9oWZCw", "label": "F2iLHPABC42YMG7uL2U7L3wAbqBqRsV1Y35M4r9oWZCw", "shape": "dot", "title": "F2iLHPABC42YMG7uL2U7L3wAbqBqRsV1Y35M4r9oWZCw"}, {"color": "#97c2fc", "id": "4fydK3dtJCtbibGeM4VBRvTbRHraccSALU9wiUG3ASe6", "label": "4fydK3dtJCtbibGeM4VBRvTbRHraccSALU9wiUG3ASe6", "shape": "dot", "title": "4fydK3dtJCtbibGeM4VBRvTbRHraccSALU9wiUG3ASe6"}, {"color": "#97c2fc", "id": "DdqX6barNo9eWp5beeGqn4aZrffcujYh2onmJzckBqPq", "label": "DdqX6barNo9eWp5beeGqn4aZrffcujYh2onmJzckBqPq", "shape": "dot", "title": "DdqX6barNo9eWp5beeGqn4aZrffcujYh2onmJzckBqPq"}, {"color": "#97c2fc", "id": "84Bn6sASBKuBkjiXsADQAbEmkE5j61CXqJD9HjUzi2fi", "label": "84Bn6sASBKuBkjiXsADQAbEmkE5j61CXqJD9HjUzi2fi", "shape": "dot", "title": "84Bn6sASBKuBkjiXsADQAbEmkE5j61CXqJD9HjUzi2fi"}, {"color": "#97c2fc", "id": "FZuxbmgQUH7SByRVn7i7wjRUKnJyu8RJMv1mAu66mZ8x", "label": "FZuxbmgQUH7SByRVn7i7wjRUKnJyu8RJMv1mAu66mZ8x", "shape": "dot", "title": "FZuxbmgQUH7SByRVn7i7wjRUKnJyu8RJMv1mAu66mZ8x"}, {"color": "#97c2fc", "id": "2AQdpHJ2JpcEgPiATUXjQxA8QmafFegfQwSLWSprPicm", "label": "2AQdpHJ2JpcEgPiATUXjQxA8QmafFegfQwSLWSprPicm", "shape": "dot", "title": "2AQdpHJ2JpcEgPiATUXjQxA8QmafFegfQwSLWSprPicm"}, {"color": "#97c2fc", "id": "H8sMJSCQxfKiFTCfDR3DUMLPwcRbM61LGFJ8N4dK3WjS", "label": "H8sMJSCQxfKiFTCfDR3DUMLPwcRbM61LGFJ8N4dK3WjS", "shape": "dot", "title": "H8sMJSCQxfKiFTCfDR3DUMLPwcRbM61LGFJ8N4dK3WjS"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "from": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF", "label": "0.8923 SOL)", "title": "0.8923 SOL)", "to": "GpMZbSM2GgvTKHJirzeGfMFoaZ8UR2X7F4v8vHTvxFbL"}, {"arrows": "to", "from": "EBEwXmPh6LKmXP9hJijXhTvTtVCcZTHvs3b1LzRD92R", "label": "1.5000 SOL)", "title": "1.5000 SOL)", "to": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF"}, {"arrows": "to", "from": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF", "label": "2148.4601 USDC)", "title": "2148.4601 USDC)", "to": "CCDryy329MkVzT7iYCNc6ysuenjLX3WbsPaZs1jdSNnE"}, {"arrows": "to", "from": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF", "label": "0.7175 SOL)", "title": "0.7175 SOL)", "to": "CAPhoEse9xEH95XmdnJjYrZdNCA8xfUWdy3aWymHa1Vj"}, {"arrows": "to", "from": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF", "label": "28000.0000 USDC)", "title": "28000.0000 USDC)", "to": "CCDryy329MkVzT7iYCNc6ysuenjLX3WbsPaZs1jdSNnE"}, {"arrows": "to", "from": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF", "label": "2.9745 SOL)", "title": "2.9745 SOL)", "to": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh"}, {"arrows": "to", "from": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF", "label": "10000.0000 USDC)", "title": "10000.0000 USDC)", "to": "CCDryy329MkVzT7iYCNc6ysuenjLX3WbsPaZs1jdSNnE"}, {"arrows": "to", "from": "F2iLHPABC42YMG7uL2U7L3wAbqBqRsV1Y35M4r9oWZCw", "label": "25.0000 SOL)", "title": "25.0000 SOL)", "to": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF"}, {"arrows": "to", "from": "4fydK3dtJCtbibGeM4VBRvTbRHraccSALU9wiUG3ASe6", "label": "5.0000 SOL)", "title": "5.0000 SOL)", "to": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF"}, {"arrows": "to", "from": "DdqX6barNo9eWp5beeGqn4aZrffcujYh2onmJzckBqPq", "label": "1.0000 SOL)", "title": "1.0000 SOL)", "to": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF"}, {"arrows": "to", "from": "4fydK3dtJCtbibGeM4VBRvTbRHraccSALU9wiUG3ASe6", "label": "4.5000 SOL)", "title": "4.5000 SOL)", "to": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF"}, {"arrows": "to", "from": "84Bn6sASBKuBkjiXsADQAbEmkE5j61CXqJD9HjUzi2fi", "label": "2.1000 SOL)", "title": "2.1000 SOL)", "to": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF"}, {"arrows": "to", "from": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF", "label": "1.1000 SOL)", "title": "1.1000 SOL)", "to": "FZuxbmgQUH7SByRVn7i7wjRUKnJyu8RJMv1mAu66mZ8x"}, {"arrows": "to", "from": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF", "label": "4.8000 SOL)", "title": "4.8000 SOL)", "to": "4fydK3dtJCtbibGeM4VBRvTbRHraccSALU9wiUG3ASe6"}, {"arrows": "to", "from": "4fydK3dtJCtbibGeM4VBRvTbRHraccSALU9wiUG3ASe6", "label": "29.0000 SOL)", "title": "29.0000 SOL)", "to": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF"}, {"arrows": "to", "from": "F2iLHPABC42YMG7uL2U7L3wAbqBqRsV1Y35M4r9oWZCw", "label": "5.0000 SOL)", "title": "5.0000 SOL)", "to": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF"}, {"arrows": "to", "from": "2AQdpHJ2JpcEgPiATUXjQxA8QmafFegfQwSLWSprPicm", "label": "10.0484 SOL)", "title": "10.0484 SOL)", "to": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF"}, {"arrows": "to", "from": "2AQdpHJ2JpcEgPiATUXjQxA8QmafFegfQwSLWSprPicm", "label": "826.7419 USDC)", "title": "826.7419 USDC)", "to": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF"}, {"arrows": "to", "from": "H8sMJSCQxfKiFTCfDR3DUMLPwcRbM61LGFJ8N4dK3WjS", "label": "3.1999 SOL)", "title": "3.1999 SOL)", "to": "ERAkXtjhjaFwCnuy8E4oVJvz8mHA7W1wJpMsj1pcjbJF"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "barnesHut": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "gravitationalConstant": -80000,
+            "springConstant": 0.001,
+            "springLength": 250
+        },
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
