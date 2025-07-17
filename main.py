@@ -1,7 +1,6 @@
 import requests
 import re
 import networkx as nx
-import matplotlib.pyplot as plt
 
 
 #lets first focus on reading the transaction data ( transfers fo usdc.usdt,sol,wsol)
@@ -84,32 +83,38 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
 # Example usage:
 transactions = fetch_all_transactions("F2iLHPABC42YMG7uL2U7L3wAbqBqRsV1Y35M4r9oWZCw")
 processed_txs = pre_process_transaction_list(transactions)
-filtered_txns = filter_transactions_by_usd(processed_txs, 100, sol_price=SOL_PRICE)
+filtered_txns = filter_transactions_by_usd(processed_txs, 1000, sol_price=SOL_PRICE)
 
 from pyvis.network import Network
 
 
 G = nx.MultiDiGraph()
-
-# Create a pyvis Network
 net = Network(height='1200px', width='100%', notebook=False, directed=True)
-
-# Optional: for better physics + drag response
 net.barnes_hut()
 
-# Add nodes and edges to pyvis
 for sender, currency, amount, receiver in filtered_txns:
     usd_value = float(amount) * (170 if currency.lower() == 'sol' else 1)
     label = f"{float(amount):.4f} {currency.upper()})"
 
-    # Add nodes if not already added
-    net.add_node(sender, label=sender , title=sender,font={'size': 20}, url=f"https://solscan.io/account/{sender}")
-    net.add_node(receiver, label=receiver , title=receiver,font={'size': 20},url=f"https://solscan.io/account/{receiver}")
-    #for some reason the nodes arent clickable so fix it
-    # Add edge with label
+    # Custom title with tooltip & click-to-copy JavaScript
+    sender_html = f"""
+    <b>{sender}</b><br>
+    <a href='https://solscan.io/account/{sender}' target='_blank'>View on Solscan</a><br>
+    <button onclick="navigator.clipboard.writeText('{sender}')">Copy</button>
+    """
+
+    receiver_html = f"""
+    <b>{receiver}</b><br>
+    <a href='https://solscan.io/account/{receiver}' target='_blank'>View on Solscan</a><br>
+    <button onclick="navigator.clipboard.writeText('{receiver}')">Copy</button>
+    """
+
+    net.add_node(sender, label=sender[:6] + "..." + sender[-4:], title=sender_html, font={'size': 20})
+    net.add_node(receiver, label=receiver[:6] + "..." + receiver[-4:], title=receiver_html, font={'size': 20})
+
     net.add_edge(sender, receiver, label=label, title=label)
 
-# Display the interactive graph
+# Write and open the HTML
 net.write_html("wallet_graph.html", notebook=False, open_browser=True)
 
 
