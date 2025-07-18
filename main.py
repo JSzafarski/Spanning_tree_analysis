@@ -1,7 +1,8 @@
 import requests
 import re
 import networkx as nx
-
+import getBal
+KNOWN_WALLETS = [] #for cex'es ect....
 
 #lets first focus on reading the transaction data ( transfers fo usdc.usdt,sol,wsol)
 SOL_PRICE = 170
@@ -81,9 +82,9 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
 
 
 # Example usage:
-transactions = fetch_all_transactions("F2iLHPABC42YMG7uL2U7L3wAbqBqRsV1Y35M4r9oWZCw")
+transactions = fetch_all_transactions("4fydK3dtJCtbibGeM4VBRvTbRHraccSALU9wiUG3ASe6")
 processed_txs = pre_process_transaction_list(transactions)
-filtered_txns = filter_transactions_by_usd(processed_txs, 1000, sol_price=SOL_PRICE)
+filtered_txns = filter_transactions_by_usd(processed_txs, 500, sol_price=SOL_PRICE)
 
 from pyvis.network import Network
 
@@ -92,6 +93,7 @@ G = nx.MultiDiGraph()
 net = Network(height='1200px', width='100%', notebook=False, directed=True)
 net.barnes_hut()
 
+seen_nodes = {}
 for sender, currency, amount, receiver in filtered_txns:
     usd_value = float(amount) * (170 if currency.lower() == 'sol' else 1)
     label = f"{float(amount):.4f} {currency.upper()})"
@@ -108,9 +110,21 @@ for sender, currency, amount, receiver in filtered_txns:
     <a href='https://solscan.io/account/{receiver}' target='_blank'>View on Solscan</a><br>
     <button onclick="navigator.clipboard.writeText('{receiver}')">Copy</button>
     """
+    #label nodes with high sol value ( probably exchange)
+    HIGH_BAL = 5000
+    if sender not in seen_nodes:
+        balance = getBal.get_sol_balance_quicknode(sender)
+        seen_nodes[sender] = balance
+    if receiver not in seen_nodes:
+        balance = getBal.get_sol_balance_quicknode(receiver)
+        seen_nodes[receiver] = balance
 
-    net.add_node(sender, label=sender[:6] + "..." + sender[-4:], title=sender_html, font={'size': 20})
-    net.add_node(receiver, label=receiver[:6] + "..." + receiver[-4:], title=receiver_html, font={'size': 20})
+    # Determine color based on balance
+    sender_color = 'red' if seen_nodes[sender] > HIGH_BAL else None
+    receiver_color = 'red' if seen_nodes[receiver] > HIGH_BAL else None
+
+    net.add_node(sender, label=sender[:6] + "..." + sender[-4:], title=sender_html, font={'size': 20},color=sender_color)
+    net.add_node(receiver, label=receiver[:6] + "..." + receiver[-4:], title=receiver_html, font={'size': 20},color=receiver_color)
 
     net.add_edge(sender, receiver, label=label, title=label)
 
