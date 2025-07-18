@@ -82,9 +82,9 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
 
 
 # Example usage:
-transactions = fetch_all_transactions("4fydK3dtJCtbibGeM4VBRvTbRHraccSALU9wiUG3ASe6")
+transactions = fetch_all_transactions("BeTvN1ucBnCj4Ef688i51KHn2oq35CWDvD2J5aLFp17t")
 processed_txs = pre_process_transaction_list(transactions)
-filtered_txns = filter_transactions_by_usd(processed_txs, 500, sol_price=SOL_PRICE)
+filtered_txns = filter_transactions_by_usd(processed_txs, 100, sol_price=SOL_PRICE)
 
 from pyvis.network import Network
 
@@ -111,7 +111,7 @@ for sender, currency, amount, receiver in filtered_txns:
     <button onclick="navigator.clipboard.writeText('{receiver}')">Copy</button>
     """
     #label nodes with high sol value ( probably exchange)
-    HIGH_BAL = 5000
+    HIGH_BAL = 1000
     if sender not in seen_nodes:
         balance = getBal.get_sol_balance_quicknode(sender)
         seen_nodes[sender] = balance
