@@ -81,7 +81,8 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
 
 
 # Example usage:
-transactions = fetch_all_transactions("Ax5Zvn6Z92DfnUo9xz4xUB6KZtKtRP4rh2Fnq2XgbiFB")
+user = "DqqvEiiB73n1zXULMtUpWkFjgKUQ5zEfqBibsgReVoqj"
+transactions = fetch_all_transactions(user)
 processed_txs = pre_process_transaction_list(transactions)
 filtered_txns = filter_transactions_by_usd(processed_txs, 100, sol_price=SOL_PRICE)
 
@@ -129,9 +130,18 @@ for sender, currency, amount, receiver in filtered_txns:
     net.add_edge(sender, receiver, label=label, title=label,font={'size': 40})
 
 # Write and open the HTML
-net.write_html("wallet_graph.html", notebook=False, open_browser=True)
+net.write_html(f"wallet_graph_{user}.html", notebook=False, open_browser=True)
 
 
 #need a good transaction parsing function
 #the data structure returned will be something like  [{amount,time},...]
 #will pre process the data from each wallet then we will us ethat to build transaction chart.
+
+
+#make a modidifed version where it will automatically check the new wallets and explore to dethp x
+#needs to ignore cex wallets and other defi wallets effectively.
+#we want to find connections to actual trader
+#filer by transfer voluem and counts
+#then for each trader maybe comput their pnl and most impressive wins idk?
+
+#needs a comprehenshive db result too  for future analysis
