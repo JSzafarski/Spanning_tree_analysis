@@ -123,8 +123,8 @@ for sender, currency, amount, receiver in filtered_txns:
     sender_color = 'red' if seen_nodes[sender] > HIGH_BAL else None
     receiver_color = 'red' if seen_nodes[receiver] > HIGH_BAL else None
 
-    net.add_node(sender, label=sender[:6] + "..." + sender[-4:] + f" {float(seen_nodes[sender]):.2f} USD", title=sender_html, font={'size': 20},color=sender_color)
-    net.add_node(receiver, label=receiver[:6] + "..." + receiver[-4:] + f" {float(seen_nodes[receiver]):.2f} USD", title=receiver_html, font={'size': 20},color=receiver_color)
+    net.add_node(sender, label=sender[:6] + "..." + sender[-4:] + f" {float(seen_nodes[sender]):.2f} SOL", title=sender_html, font={'size': 20},color=sender_color)
+    net.add_node(receiver, label=receiver[:6] + "..." + receiver[-4:] + f" {float(seen_nodes[receiver]):.2f} SOL", title=receiver_html, font={'size': 20},color=receiver_color)
 
     net.add_edge(sender, receiver, label=label, title=label,font={'size': 40})
 
