@@ -74,7 +74,6 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
             usd_value = amount
         else:
             continue  # Skip unsupported currency
-
         if usd_value >= min_usd:
             filtered.append([sender, currency.lower(), f"{amount:.8f}", receiver])
 
@@ -82,9 +81,9 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
 
 
 # Example usage:
-transactions = fetch_all_transactions("BeTvN1ucBnCj4Ef688i51KHn2oq35CWDvD2J5aLFp17t")
+transactions = fetch_all_transactions("DVRhCX28msr5RMbdb8vLe3AsnHuPPjUdPDSJXsiByEt8")
 processed_txs = pre_process_transaction_list(transactions)
-filtered_txns = filter_transactions_by_usd(processed_txs, 100, sol_price=SOL_PRICE)
+filtered_txns = filter_transactions_by_usd(processed_txs, 500, sol_price=SOL_PRICE)
 
 from pyvis.network import Network
 
@@ -133,6 +132,5 @@ net.write_html("wallet_graph.html", notebook=False, open_browser=True)
 
 
 #need a good transaction parsing function
-
 #the data structure returned will be something like  [{amount,time},...]
 #will pre process the data from each wallet then we will us ethat to build transaction chart.
