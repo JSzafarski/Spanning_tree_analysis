@@ -95,8 +95,8 @@ net.barnes_hut()
 seen_nodes = {}
 for sender, currency, amount, receiver in filtered_txns:
     usd_value = float(amount) * (170 if currency.lower() == 'sol' else 1)
-    high_val_warning = lambda val: "High value" if val > 5000 else ""
-    label = f"{float(amount):.4f} {currency.upper()} {high_val_warning(usd_value)})"
+    high_val_warning = lambda val: "(High value)" if val > 5000 else ""
+    label = f"{float(amount):.4f} {currency.upper()} {high_val_warning(usd_value)}"
 
     # Custom title with tooltip & click-to-copy JavaScript
     sender_html = f"""
@@ -126,7 +126,7 @@ for sender, currency, amount, receiver in filtered_txns:
     net.add_node(sender, label=sender[:6] + "..." + sender[-4:], title=sender_html, font={'size': 20},color=sender_color)
     net.add_node(receiver, label=receiver[:6] + "..." + receiver[-4:], title=receiver_html, font={'size': 20},color=receiver_color)
 
-    net.add_edge(sender, receiver, label=label, title=label)
+    net.add_edge(sender, receiver, label=label, title=label,font={'size': 40})
 
 # Write and open the HTML
 net.write_html("wallet_graph.html", notebook=False, open_browser=True)
