@@ -81,7 +81,7 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
 
 
 # Example usage:
-transactions = fetch_all_transactions("HaoqJR8V4M3D3Y4hy8cYoNB9xmR1mj8uxd8hzzpF3Bdi")
+transactions = fetch_all_transactions("Ax5Zvn6Z92DfnUo9xz4xUB6KZtKtRP4rh2Fnq2XgbiFB")
 processed_txs = pre_process_transaction_list(transactions)
 filtered_txns = filter_transactions_by_usd(processed_txs, 100, sol_price=SOL_PRICE)
 
@@ -123,8 +123,8 @@ for sender, currency, amount, receiver in filtered_txns:
     sender_color = 'red' if seen_nodes[sender] > HIGH_BAL else None
     receiver_color = 'red' if seen_nodes[receiver] > HIGH_BAL else None
 
-    net.add_node(sender, label=sender[:6] + "..." + sender[-4:], title=sender_html, font={'size': 20},color=sender_color)
-    net.add_node(receiver, label=receiver[:6] + "..." + receiver[-4:], title=receiver_html, font={'size': 20},color=receiver_color)
+    net.add_node(sender, label=sender[:6] + "..." + sender[-4:] + f" {float(seen_nodes[sender]):.2f} USD", title=sender_html, font={'size': 20},color=sender_color)
+    net.add_node(receiver, label=receiver[:6] + "..." + receiver[-4:] + f" {float(seen_nodes[receiver]):.2f} USD", title=receiver_html, font={'size': 20},color=receiver_color)
 
     net.add_edge(sender, receiver, label=label, title=label,font={'size': 40})
 
