@@ -81,9 +81,9 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
 
 
 # Example usage:
-transactions = fetch_all_transactions("DVRhCX28msr5RMbdb8vLe3AsnHuPPjUdPDSJXsiByEt8")
+transactions = fetch_all_transactions("HaoqJR8V4M3D3Y4hy8cYoNB9xmR1mj8uxd8hzzpF3Bdi")
 processed_txs = pre_process_transaction_list(transactions)
-filtered_txns = filter_transactions_by_usd(processed_txs, 500, sol_price=SOL_PRICE)
+filtered_txns = filter_transactions_by_usd(processed_txs, 100, sol_price=SOL_PRICE)
 
 from pyvis.network import Network
 
@@ -95,7 +95,8 @@ net.barnes_hut()
 seen_nodes = {}
 for sender, currency, amount, receiver in filtered_txns:
     usd_value = float(amount) * (170 if currency.lower() == 'sol' else 1)
-    label = f"{float(amount):.4f} {currency.upper()})"
+    high_val_warning = lambda val: "High value" if val > 5000 else ""
+    label = f"{float(amount):.4f} {currency.upper()} {high_val_warning(usd_value)})"
 
     # Custom title with tooltip & click-to-copy JavaScript
     sender_html = f"""
