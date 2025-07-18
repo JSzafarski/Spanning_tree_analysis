@@ -95,8 +95,8 @@ net.barnes_hut()
 seen_nodes = {}
 for sender, currency, amount, receiver in filtered_txns:
     usd_value = float(amount) * (170 if currency.lower() == 'sol' else 1)
-    high_val_warning = lambda val: "(High value)" if val > 5000 else ""
-    label = f"{float(amount):.4f} {currency.upper()} {high_val_warning(usd_value)}"
+    high_val_warning = lambda val: "(HIGH VALUE)" if val > 5000 else ""
+    label = f"{float(amount):.2f} {currency.upper()} {high_val_warning(usd_value)}"
 
     # Custom title with tooltip & click-to-copy JavaScript
     sender_html = f"""
