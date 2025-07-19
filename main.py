@@ -81,7 +81,7 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
 
 
 # Example usage:
-user = "DqqvEiiB73n1zXULMtUpWkFjgKUQ5zEfqBibsgReVoqj"
+user = "F2iLHPABC42YMG7uL2U7L3wAbqBqRsV1Y35M4r9oWZCw"
 transactions = fetch_all_transactions(user)
 processed_txs = pre_process_transaction_list(transactions)
 filtered_txns = filter_transactions_by_usd(processed_txs, 100, sol_price=SOL_PRICE)
@@ -103,13 +103,15 @@ for sender, currency, amount, receiver in filtered_txns:
     sender_html = f"""
     <b>{sender}</b><br>
     <a href='https://solscan.io/account/{sender}' target='_blank'>View on Solscan</a><br>
-    <button onclick="navigator.clipboard.writeText('{sender}')">Copy</button>
+    <button onclick="navigator.clipboard.writeText('{sender}')">Copy</button><br>
+    <button onclick="hideNode('{sender}')">❌ Hide</button>
     """
 
     receiver_html = f"""
     <b>{receiver}</b><br>
     <a href='https://solscan.io/account/{receiver}' target='_blank'>View on Solscan</a><br>
-    <button onclick="navigator.clipboard.writeText('{receiver}')">Copy</button>
+    <button onclick="navigator.clipboard.writeText('{receiver}')">Copy</button><br>
+    <button onclick="hideNode('{receiver}')">❌ Hide</button>
     """
     #label nodes with high sol value ( probably exchange)
     HIGH_BAL = 1000
@@ -130,8 +132,40 @@ for sender, currency, amount, receiver in filtered_txns:
     net.add_edge(sender, receiver, label=label, title=label,font={'size': 40})
 
 # Write and open the HTML
-net.write_html(f"wallet_graph_{user}.html", notebook=False, open_browser=True)
+html_file = f"wallet_graph_{user}.html"
+net.write_html(html_file, notebook=False, open_browser=True)
+with open(html_file, 'r', encoding='utf-8') as f:
+    html = f.read()
 
+# JavaScript to hide a node and its edges
+inject_script = """
+<script>
+function hideNode(nodeId) {
+    var network = window.network;
+    if (!network) return;
+
+    var updateArray = [];
+    var connectedEdges = network.getConnectedEdges(nodeId);
+
+    // Hide node
+    updateArray.push({id: nodeId, hidden: true});
+
+    // Optionally hide edges too
+    connectedEdges.forEach(function(edgeId) {
+        updateArray.push({id: edgeId, hidden: true});
+    });
+
+    network.body.data.nodes.update(updateArray.filter(obj => obj.id in network.body.nodes || obj.id in network.body.edges));
+}
+</script>
+"""
+
+# Insert the script before </body>
+html = html.replace("</body>", inject_script + "\n</body>")
+
+# Save updated HTML
+with open(html_file, 'w', encoding='utf-8') as f:
+    f.write(html)
 
 #need a good transaction parsing function
 #the data structure returned will be something like  [{amount,time},...]
