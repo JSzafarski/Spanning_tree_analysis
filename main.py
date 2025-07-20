@@ -13,8 +13,8 @@ SOL_PRICE = 170
 
 # I will be adding the ability to auotmatically build a spanning tree of all associated wallets based on th params i setout
 #for now i will decide the end criterta to be at most max number of seen nodes eg9 max 50 )
-seen_nodes = set()
-unseen_nodes = [] #stack ( can create a stack object later for cleanliness)
+seen_nodes = set() # set since each wallet needs to be unique
+unseen_nodes = [] # stack ( can create a stack object later for cleanliness)
 
 def fetch_all_transactions(wallet_address):
     api_key = "3e1717e1-bf69-45ae-af63-361e43b78961"
