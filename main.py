@@ -10,6 +10,12 @@ from cex_checker import analyze_avg_tx_time
 #lets first focus on reading the transaction data ( transfers fo usdc.usdt,sol,wsol)
 SOL_PRICE = 170
 
+
+# I will be adding the ability to auotmatically build a spanning tree of all associated wallets based on th params i setout
+#for now i will decide the end criterta to be at most max number of seen nodes eg9 max 50 )
+seen_nodes = set()
+unseen_nodes = [] #stack ( can create a stack object later for cleanliness)
+
 def fetch_all_transactions(wallet_address):
     api_key = "3e1717e1-bf69-45ae-af63-361e43b78961"
     base_url = f"https://api.helius.xyz/v0/addresses/{wallet_address}/transactions?api-key={api_key}"
@@ -87,7 +93,7 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
 user = "BobpBzS3joQtbpY8VRycnFguHwxHLD7hRwguBe4dDCsk"
 transactions = fetch_all_transactions(user)
 processed_txs = pre_process_transaction_list(transactions)
-filtered_txns = filter_transactions_by_usd(processed_txs, 100, sol_price=SOL_PRICE)
+filtered_txns = filter_transactions_by_usd(processed_txs, 50, sol_price=SOL_PRICE)
 
 
 
@@ -214,6 +220,7 @@ for sender, currency, amount, receiver in filtered_txns:
 for (node1, node2), values in edge_data.items():
     # Skip edge if both directions are below threshold
     if values["from_to_count"] < MIN_TX_COUNT or values["to_from_count"] < MIN_TX_COUNT:
+        #also consider low bal transactions
         continue
 
     # Cache balances
