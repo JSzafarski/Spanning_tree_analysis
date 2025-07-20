@@ -2,6 +2,8 @@ import requests
 import re
 import networkx as nx
 import getBal
+from pyvis.network import Network
+from collections import defaultdict
 KNOWN_WALLETS = [] #for cex'es ect....
 
 #lets first focus on reading the transaction data ( transfers fo usdc.usdt,sol,wsol)
@@ -80,16 +82,15 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
     return filtered
 
 
-# Example usage:
+
 user = "F2iLHPABC42YMG7uL2U7L3wAbqBqRsV1Y35M4r9oWZCw"
 transactions = fetch_all_transactions(user)
 processed_txs = pre_process_transaction_list(transactions)
 filtered_txns = filter_transactions_by_usd(processed_txs, 100, sol_price=SOL_PRICE)
 
-from pyvis.network import Network
 
 
-G = nx.MultiDiGraph()
+'''G = nx.MultiDiGraph()
 net = Network(height='1200px', width='100%', notebook=False, directed=True)
 net.barnes_hut()
 
@@ -164,6 +165,112 @@ function hideNode(nodeId) {
 html = html.replace("</body>", inject_script + "\n</body>")
 
 # Save updated HTML
+with open(html_file, 'w', encoding='utf-8') as f:
+    f.write(html)'''
+
+
+G = nx.Graph()
+net = Network(height='1200px', width='100%', notebook=False, directed=False)
+net.barnes_hut()
+
+# Aggregation map
+edge_data = defaultdict(lambda: {
+    "from_to_usd": 0.0,
+    "to_from_usd": 0.0,
+    "from_to_count": 0,
+    "to_from_count": 0
+})
+
+seen_nodes = {}
+HIGH_BAL = 1000
+MIN_TX_COUNT = 2  # only show edge if in or out count >= this
+for sender, currency, amount, receiver in filtered_txns:
+    usd_value = float(amount) * (SOL_PRICE if currency.lower() == 'sol' else 1)
+    node_a, node_b = sorted([sender, receiver])  # always same order
+
+    if sender < receiver:
+        edge_data[(node_a, node_b)]["from_to_usd"] += usd_value
+        edge_data[(node_a, node_b)]["from_to_count"] += 1
+    else:
+        edge_data[(node_a, node_b)]["to_from_usd"] += usd_value
+        edge_data[(node_a, node_b)]["to_from_count"] += 1
+
+# Step 1: Aggregate transfers between nodes
+for (node1, node2), values in edge_data.items():
+    # Skip edge if both directions are below threshold
+    if values["from_to_count"] < MIN_TX_COUNT and values["to_from_count"] < MIN_TX_COUNT:
+        continue
+
+    # Cache balances
+    for node in [node1, node2]:
+        if node not in seen_nodes:
+            seen_nodes[node] = getBal.get_sol_balance_quicknode(node)
+
+    def node_html(node):
+        return f"""
+        <b>{node}</b><br>
+        <a href='https://solscan.io/account/{node}' target='_blank'>View on Solscan</a><br>
+        <button onclick="navigator.clipboard.writeText('{node}')">Copy</button><br>
+        <button onclick="hideNode('{node}')">❌ Hide</button>
+        """
+
+    for node in [node1, node2]:
+        net.add_node(
+            node,
+            label=f"{node[:6]}...{node[-4:]} {seen_nodes[node]:.2f} SOL",
+            title=node_html(node),
+            font={'size': 20},
+            color='red' if seen_nodes[node] > HIGH_BAL else None
+        )
+
+    # Get values
+    out_val = values["from_to_usd"]
+    in_val = values["to_from_usd"]
+    out_count = values["from_to_count"]
+    in_count = values["to_from_count"]
+    total_val = out_val + in_val
+
+    # New label with tx count
+    edge_label = f"→ ${out_val:.2f} ({out_count}) | ← ${in_val:.2f} ({in_count})"
+    edge_width = min(12, max(1, total_val / 1000))
+
+    net.add_edge(
+        node1,
+        node2,
+        label=edge_label,
+        title=edge_label,
+        width=edge_width
+    )
+
+# Step 3: Save and open HTML
+user = "wallet_user"
+html_file = f"wallet_graph_{user}.html"
+net.write_html(html_file, notebook=False, open_browser=True)
+
+# Inject JS for hideNode()
+with open(html_file, 'r', encoding='utf-8') as f:
+    html = f.read()
+
+inject_script = """
+<script>
+function hideNode(nodeId) {
+    var network = window.network;
+    if (!network) return;
+
+    var updateArray = [];
+    var connectedEdges = network.getConnectedEdges(nodeId);
+    updateArray.push({id: nodeId, hidden: true});
+    connectedEdges.forEach(function(edgeId) {
+        updateArray.push({id: edgeId, hidden: true});
+    });
+
+    network.body.data.nodes.update(updateArray.filter(obj => obj.id in network.body.nodes || obj.id in network.body.edges));
+}
+</script>
+"""
+
+html = html.replace("</body>", inject_script + "\n</body>")
+
 with open(html_file, 'w', encoding='utf-8') as f:
     f.write(html)
 

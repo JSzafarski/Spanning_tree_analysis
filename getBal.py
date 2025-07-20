@@ -38,3 +38,4 @@ def get_sol_balance_quicknode(pubkey: str, endpoint_url = endpoint) -> float:
         return -1  # You can handle this differently if needed
 
 
+#need to make the balance usdc and usdt too ( usdc predomenantly)
