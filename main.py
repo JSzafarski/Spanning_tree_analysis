@@ -4,7 +4,8 @@ import networkx as nx
 import getBal
 from pyvis.network import Network
 from collections import defaultdict
-KNOWN_WALLETS = [] #for cex'es ect....
+from cex_checker import analyze_avg_tx_time
+
 
 #lets first focus on reading the transaction data ( transfers fo usdc.usdt,sol,wsol)
 SOL_PRICE = 170
@@ -83,7 +84,7 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
 
 
 
-user = "F2iLHPABC42YMG7uL2U7L3wAbqBqRsV1Y35M4r9oWZCw"
+user = "BobpBzS3joQtbpY8VRycnFguHwxHLD7hRwguBe4dDCsk"
 transactions = fetch_all_transactions(user)
 processed_txs = pre_process_transaction_list(transactions)
 filtered_txns = filter_transactions_by_usd(processed_txs, 100, sol_price=SOL_PRICE)
@@ -173,6 +174,7 @@ G = nx.Graph()
 net = Network(height='1200px', width='100%', notebook=False, directed=False)
 net.barnes_hut()
 
+
 # Aggregation map
 edge_data = defaultdict(lambda: {
     "from_to_usd": 0.0,
@@ -183,10 +185,23 @@ edge_data = defaultdict(lambda: {
 
 seen_nodes = {}
 HIGH_BAL = 1000
-MIN_TX_COUNT = 2  # only show edge if in or out count >= this
+MIN_TX_COUNT = 1  # only show edge if in or out count >= this
+seen_wallet_cache = []
+cex_wallets = []
 for sender, currency, amount, receiver in filtered_txns:
     usd_value = float(amount) * (SOL_PRICE if currency.lower() == 'sol' else 1)
     node_a, node_b = sorted([sender, receiver])  # always same order
+
+    if sender not in seen_wallet_cache: #this is to help label cex wallets
+        check = analyze_avg_tx_time(sender)
+        seen_wallet_cache.append(sender)
+        if check:
+            cex_wallets.append(sender)
+    if receiver not in seen_wallet_cache:
+        check = analyze_avg_tx_time(receiver)
+        seen_wallet_cache.append(receiver)
+        if check:
+            cex_wallets.append(receiver)
 
     if sender < receiver:
         edge_data[(node_a, node_b)]["from_to_usd"] += usd_value
@@ -198,17 +213,19 @@ for sender, currency, amount, receiver in filtered_txns:
 # Step 1: Aggregate transfers between nodes
 for (node1, node2), values in edge_data.items():
     # Skip edge if both directions are below threshold
-    if values["from_to_count"] < MIN_TX_COUNT and values["to_from_count"] < MIN_TX_COUNT:
+    if values["from_to_count"] < MIN_TX_COUNT or values["to_from_count"] < MIN_TX_COUNT:
         continue
 
     # Cache balances
     for node in [node1, node2]:
         if node not in seen_nodes:
             seen_nodes[node] = getBal.get_sol_balance_quicknode(node)
-
+    cex_flag = ''
+    if node in cex_wallets:
+        cex_flag = "(CEX likely)"
     def node_html(node):
         return f"""
-        <b>{node}</b><br>
+        <b>{node} {cex_flag}</b><br>
         <a href='https://solscan.io/account/{node}' target='_blank'>View on Solscan</a><br>
         <button onclick="navigator.clipboard.writeText('{node}')">Copy</button><br>
         <button onclick="hideNode('{node}')">❌ Hide</button>
