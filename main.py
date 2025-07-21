@@ -12,8 +12,8 @@ SOL_PRICE = 170
 
 # I will be adding the ability to automatically build a spanning tree of all associated wallets based on th params i setout
 #for now I will decide the end criteria to be at most max number of seen nodes eg9 max 50 )
-seen_nodes = set() # set since each wallet needs to be unique
-unseen_nodes = [] # stack ( can create a stack object later for cleanliness)
+visited_nodes = set() # set since each wallet needs to be unique
+
 
 
 class NodeStack:
@@ -30,6 +30,9 @@ class NodeStack:
         if self.stack:
             return self.stack.pop()
         return None #if enmpty
+
+    def size(self):
+        return len(self.stack)
 
     def __repr__(self):
         return f"StringStack({self.stack})"
@@ -105,10 +108,15 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
     return filtered
 
 
-user = "DLKM8KySrHxsAtAQHQxwZeTQpbhihpBAeMRgdeDTBhio"
-transactions = fetch_all_transactions(user)
-processed_txs = pre_process_transaction_list(transactions)
-filtered_txns = filter_transactions_by_usd(processed_txs, 50, sol_price=SOL_PRICE)
+first_node = "DLKM8KySrHxsAtAQHQxwZeTQpbhihpBAeMRgdeDTBhio"
+
+#here we append the starting node to the stack
+
+wallet_stack.push(first_node)
+
+#transactions = fetch_all_transactions(user)
+#processed_txs = pre_process_transaction_list(transactions)
+#filtered_txns = filter_transactions_by_usd(processed_txs, 50, sol_price=SOL_PRICE)
 
 G = nx.Graph()
 net = Network(height='1200px', width='100%', notebook=False, directed=False)
@@ -127,36 +135,51 @@ HIGH_BAL = 1000
 MIN_TX_COUNT = 1  # only show edge if in or out count >= this
 seen_wallet_cache = [] #i can use seen nodes but i rather decouple this for now
 cex_wallets = []
+MAX_SEEN_NODES = 50
+while True:
+    if wallet_stack.size() == 0 or len(visited_nodes) >= MAX_SEEN_NODES:
+        break # ending the traversal
+    current_node = wallet_stack.pop()
+    visited_nodes.add(current_node)
+    transactions = fetch_all_transactions(current_node) # dont need to consider None value since above handles this anyway
+    processed_txs = pre_process_transaction_list(transactions)
+    filtered_txns = filter_transactions_by_usd(processed_txs, 50, sol_price=SOL_PRICE)
 
+    for sender, currency, amount, receiver in filtered_txns:
+        #need to make sure the wallet of question is in the receiver or sender side
+        if sender is current_node or receiver is current_node:
+            if sender not in visited_nodes:
+                visited_nodes.add(sender)
+                wallet_stack.push(sender)
+            if receiver not in visited_nodes:
+                visited_nodes.add(receiver)
+                wallet_stack.push(receiver)
 
-for sender, currency, amount, receiver in filtered_txns:
-    #need to make sure the wallet of question is in the receiver or sender side
-    if sender is user or receiver is  user:
-        usd_value = float(amount) * (SOL_PRICE if currency.lower() == 'sol' else 1)
-        node_a, node_b = sorted([sender, receiver])  # always same order
+            usd_value = float(amount) * (SOL_PRICE if currency.lower() == 'sol' else 1)
+            node_a, node_b = sorted([sender, receiver])  # always same order
 
-        if sender not in seen_wallet_cache: #this is to help label cex wallets
-            check = analyze_avg_tx_time(sender)
-            seen_wallet_cache.append(sender)
-            if check:
-                cex_wallets.append(sender)
-        if receiver not in seen_wallet_cache:
-            check = analyze_avg_tx_time(receiver)
-            seen_wallet_cache.append(receiver)
-            if check:
-                cex_wallets.append(receiver)
+            if sender not in seen_wallet_cache: #this is to help label cex wallets
+                check = analyze_avg_tx_time(sender)
+                seen_wallet_cache.append(sender)
+                if check:
+                    cex_wallets.append(sender)
+            if receiver not in seen_wallet_cache:
+                check = analyze_avg_tx_time(receiver)
+                seen_wallet_cache.append(receiver)
+                if check:
+                    cex_wallets.append(receiver)
 
-        if sender < receiver:
-            edge_data[(node_a, node_b)]["from_to_usd"] += usd_value
-            edge_data[(node_a, node_b)]["from_to_count"] += 1
-        else:
-            edge_data[(node_a, node_b)]["to_from_usd"] += usd_value
-            edge_data[(node_a, node_b)]["to_from_count"] += 1
+            if sender < receiver:
+                edge_data[(node_a, node_b)]["from_to_usd"] += usd_value
+                edge_data[(node_a, node_b)]["from_to_count"] += 1
+            else:
+                edge_data[(node_a, node_b)]["to_from_usd"] += usd_value
+                edge_data[(node_a, node_b)]["to_from_count"] += 1
 
 # Step 1: Aggregate transfers between nodes
 for (node1, node2), values in edge_data.items():
     # Skip edge if both directions are below threshold
-    if values["from_to_count"] < MIN_TX_COUNT or values["to_from_count"] < MIN_TX_COUNT:
+    if values["from_to_count"] < MIN_TX_COUNT and values["to_from_count"] < MIN_TX_COUNT: #change to or later ( testing now )
         #also consider low bal transactions
         continue
 
@@ -205,8 +228,7 @@ for (node1, node2), values in edge_data.items():
     )
 
 # Step 3: Save and open HTML
-user = "wallet_user"
-html_file = f"wallet_graph_{user}.html"
+html_file = f"wallet_graph_{first_node}.html"
 net.write_html(html_file, notebook=False, open_browser=True)
 
 # Inject JS for hideNode()
@@ -244,5 +266,4 @@ with open(html_file, 'w', encoding='utf-8') as f:
 #we want to find connections to actual trader
 #filer by transfer volume and counts
 #then for each trader maybe compute their pnl and most impressive wins idk?
-
 #needs a comprehensive db result too  for future analysis
