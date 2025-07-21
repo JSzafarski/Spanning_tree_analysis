@@ -13,7 +13,7 @@ def analyze_avg_tx_time(wallet_address):
     transactions = response.json()
 
     if len(transactions) < 50:
-        print("Not enough transactions to calculate average time.")
+        #print("Not enough transactions to calculate average time.")
         return False
 
     # Extract and sort timestamps (most recent first)

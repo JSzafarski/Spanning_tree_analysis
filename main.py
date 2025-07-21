@@ -37,6 +37,12 @@ class NodeStack:
     def __repr__(self):
         return f"StringStack({self.stack})"
 
+    def __str__(self):
+        if not self.stack:
+            return "[empty stack]"
+        lines = [f"{i}: {val}" for i, val in enumerate(reversed(self.stack))]
+        return "Top\n" + "\n".join(lines)
+
 wallet_stack = NodeStack() # creating a stack object
 
 def fetch_all_transactions(wallet_address):
@@ -108,7 +114,7 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
     return filtered
 
 
-first_node = "4qvU8f17S9ox2tjoLCaQYv1p56GDyTYF7Qfm3KNWEwJf"
+first_node = "4cdeXtdPNhrPSGP8yxFk7Lc99Fc7KXEkwR2QjRzssGpt"
 
 #here we append the starting node to the stack
 
@@ -139,8 +145,12 @@ MAX_SEEN_NODES = 50
 while True:
     if wallet_stack.size() == 0 or len(visited_nodes) >= MAX_SEEN_NODES:
         break # ending the traversal
+    print(wallet_stack)
     current_node = wallet_stack.pop()
-    if current_node in cex_wallets:
+    sol_balance = getBal.get_sol_balance_quicknode(current_node)
+    print(f"{sol_balance} SOL in {current_node}")
+    if current_node in cex_wallets or sol_balance > 1000: #for now we assume cex >1000
+        print(f'omitted {current_node} since it is likely a cex wallet')
         continue # we will ommit it ( since its a cex)
     print(f"current node: {current_node}")
     visited_nodes.add(current_node)
