@@ -108,7 +108,7 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
     return filtered
 
 
-first_node = "DLKM8KySrHxsAtAQHQxwZeTQpbhihpBAeMRgdeDTBhio"
+first_node = "F2iLHPABC42YMG7uL2U7L3wAbqBqRsV1Y35M4r9oWZCw"
 
 #here we append the starting node to the stack
 
@@ -140,6 +140,7 @@ while True:
     if wallet_stack.size() == 0 or len(visited_nodes) >= MAX_SEEN_NODES:
         break # ending the traversal
     current_node = wallet_stack.pop()
+    print(f"current node: {current_node}")
     visited_nodes.add(current_node)
     transactions = fetch_all_transactions(current_node) # dont need to consider None value since above handles this anyway
     processed_txs = pre_process_transaction_list(transactions)
@@ -147,7 +148,7 @@ while True:
 
     for sender, currency, amount, receiver in filtered_txns:
         #need to make sure the wallet of question is in the receiver or sender side
-        if sender is current_node or receiver is current_node:
+        if sender == current_node or receiver == current_node:
             if sender not in visited_nodes:
                 visited_nodes.add(sender)
                 wallet_stack.push(sender)
@@ -179,7 +180,7 @@ while True:
 # Step 1: Aggregate transfers between nodes
 for (node1, node2), values in edge_data.items():
     # Skip edge if both directions are below threshold
-    if values["from_to_count"] < MIN_TX_COUNT and values["to_from_count"] < MIN_TX_COUNT: #change to or later ( testing now )
+    if values["from_to_count"] >= MIN_TX_COUNT or values["to_from_count"] >= MIN_TX_COUNT: #change to or later ( testing now )
         #also consider low bal transactions
         continue
 
