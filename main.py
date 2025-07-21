@@ -10,11 +10,31 @@ from cex_checker import analyze_avg_tx_time
 #lets first focus on reading the transaction data ( transfers fo usdc.usdt,sol,wsol)
 SOL_PRICE = 170
 
-
 # I will be adding the ability to auotmatically build a spanning tree of all associated wallets based on th params i setout
-#for now i will decide the end criterta to be at most max number of seen nodes eg9 max 50 )
+#for now I will decide the end criterta to be at most max number of seen nodes eg9 max 50 )
 seen_nodes = set() # set since each wallet needs to be unique
 unseen_nodes = [] # stack ( can create a stack object later for cleanliness)
+
+
+class NodeStack:
+    def __init__(self):
+        self.stack = []
+
+    def push(self, item: str):
+        if isinstance(item, str):
+            self.stack.append(item)
+        else:
+            raise ValueError("non string type")
+
+    def pop(self):
+        if self.stack:
+            return self.stack.pop()
+        return None #if enmpty
+
+    def __repr__(self):
+        return f"StringStack({self.stack})"
+
+wallet_stack = NodeStack() # creating a stack object
 
 def fetch_all_transactions(wallet_address):
     api_key = "3e1717e1-bf69-45ae-af63-361e43b78961"
@@ -90,7 +110,7 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
 
 
 
-user = "BobpBzS3joQtbpY8VRycnFguHwxHLD7hRwguBe4dDCsk"
+user = "DLKM8KySrHxsAtAQHQxwZeTQpbhihpBAeMRgdeDTBhio"
 transactions = fetch_all_transactions(user)
 processed_txs = pre_process_transaction_list(transactions)
 filtered_txns = filter_transactions_by_usd(processed_txs, 50, sol_price=SOL_PRICE)
@@ -234,6 +254,7 @@ for (node1, node2), values in edge_data.items():
         return f"""
         <b>{node} {cex_flag}</b><br>
         <a href='https://solscan.io/account/{node}' target='_blank'>View on Solscan</a><br>
+        <a href='https://gmgn.ai/sol/address/{node}' target='_blank'>View on GMGN.ai</a><br>
         <button onclick="navigator.clipboard.writeText('{node}')">Copy</button><br>
         <button onclick="hideNode('{node}')">❌ Hide</button>
         """
