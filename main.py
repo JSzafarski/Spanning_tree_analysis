@@ -215,26 +215,28 @@ MIN_TX_COUNT = 1  # only show edge if in or out count >= this
 seen_wallet_cache = []
 cex_wallets = []
 for sender, currency, amount, receiver in filtered_txns:
-    usd_value = float(amount) * (SOL_PRICE if currency.lower() == 'sol' else 1)
-    node_a, node_b = sorted([sender, receiver])  # always same order
+    #need to make sure the wallet of question is in the receiver or sender side
+    if sender is user or receiver is  user:
+        usd_value = float(amount) * (SOL_PRICE if currency.lower() == 'sol' else 1)
+        node_a, node_b = sorted([sender, receiver])  # always same order
 
-    if sender not in seen_wallet_cache: #this is to help label cex wallets
-        check = analyze_avg_tx_time(sender)
-        seen_wallet_cache.append(sender)
-        if check:
-            cex_wallets.append(sender)
-    if receiver not in seen_wallet_cache:
-        check = analyze_avg_tx_time(receiver)
-        seen_wallet_cache.append(receiver)
-        if check:
-            cex_wallets.append(receiver)
+        if sender not in seen_wallet_cache: #this is to help label cex wallets
+            check = analyze_avg_tx_time(sender)
+            seen_wallet_cache.append(sender)
+            if check:
+                cex_wallets.append(sender)
+        if receiver not in seen_wallet_cache:
+            check = analyze_avg_tx_time(receiver)
+            seen_wallet_cache.append(receiver)
+            if check:
+                cex_wallets.append(receiver)
 
-    if sender < receiver:
-        edge_data[(node_a, node_b)]["from_to_usd"] += usd_value
-        edge_data[(node_a, node_b)]["from_to_count"] += 1
-    else:
-        edge_data[(node_a, node_b)]["to_from_usd"] += usd_value
-        edge_data[(node_a, node_b)]["to_from_count"] += 1
+        if sender < receiver:
+            edge_data[(node_a, node_b)]["from_to_usd"] += usd_value
+            edge_data[(node_a, node_b)]["from_to_count"] += 1
+        else:
+            edge_data[(node_a, node_b)]["to_from_usd"] += usd_value
+            edge_data[(node_a, node_b)]["to_from_count"] += 1
 
 # Step 1: Aggregate transfers between nodes
 for (node1, node2), values in edge_data.items():
