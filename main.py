@@ -108,7 +108,7 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
     return filtered
 
 
-first_node = "F2iLHPABC42YMG7uL2U7L3wAbqBqRsV1Y35M4r9oWZCw"
+first_node = "4qvU8f17S9ox2tjoLCaQYv1p56GDyTYF7Qfm3KNWEwJf"
 
 #here we append the starting node to the stack
 
@@ -140,6 +140,8 @@ while True:
     if wallet_stack.size() == 0 or len(visited_nodes) >= MAX_SEEN_NODES:
         break # ending the traversal
     current_node = wallet_stack.pop()
+    if current_node in cex_wallets:
+        continue # we will ommit it ( since its a cex)
     print(f"current node: {current_node}")
     visited_nodes.add(current_node)
     transactions = fetch_all_transactions(current_node) # dont need to consider None value since above handles this anyway
