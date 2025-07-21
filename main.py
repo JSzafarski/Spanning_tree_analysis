@@ -6,12 +6,12 @@ from pyvis.network import Network
 from collections import defaultdict
 from cex_checker import analyze_avg_tx_time
 
+#lets first focus on reading the transaction data (transfers fo usdc.usdt,sol,wsol)
 
-#lets first focus on reading the transaction data ( transfers fo usdc.usdt,sol,wsol)
 SOL_PRICE = 170
 
-# I will be adding the ability to auotmatically build a spanning tree of all associated wallets based on th params i setout
-#for now I will decide the end criterta to be at most max number of seen nodes eg9 max 50 )
+# I will be adding the ability to automatically build a spanning tree of all associated wallets based on th params i setout
+#for now I will decide the end criteria to be at most max number of seen nodes eg9 max 50 )
 seen_nodes = set() # set since each wallet needs to be unique
 unseen_nodes = [] # stack ( can create a stack object later for cleanliness)
 
@@ -66,8 +66,6 @@ def fetch_all_transactions(wallet_address):
 
     return all_transactions
 
-
-
 def parse_transaction(description):
     pattern = re.compile(
         r'(?P<from>\w{32,})\s+transferred\s+(?P<amount>[0-9,]+(?:\.\d+)?)[\s\xa0]+(?P<currency>sol|usdc|usdt)\s+to\s+(?P<to>\w{32,})',
@@ -81,7 +79,6 @@ def parse_transaction(description):
         return [groups['from'], groups['currency'].lower(), amount, groups['to']]
     return None
 
-
 def pre_process_transaction_list(tx_list):
     compiled_result = []
     for tx in tx_list:
@@ -94,7 +91,6 @@ def pre_process_transaction_list(tx_list):
 
 def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
     filtered = []
-
     for sender, currency, amount_str, receiver in transactions:
         amount = float(amount_str)
         if currency.lower() == 'sol':
@@ -109,97 +105,14 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
     return filtered
 
 
-
 user = "DLKM8KySrHxsAtAQHQxwZeTQpbhihpBAeMRgdeDTBhio"
 transactions = fetch_all_transactions(user)
 processed_txs = pre_process_transaction_list(transactions)
 filtered_txns = filter_transactions_by_usd(processed_txs, 50, sol_price=SOL_PRICE)
 
-
-
-'''G = nx.MultiDiGraph()
-net = Network(height='1200px', width='100%', notebook=False, directed=True)
-net.barnes_hut()
-
-seen_nodes = {}
-for sender, currency, amount, receiver in filtered_txns:
-    usd_value = float(amount) * (170 if currency.lower() == 'sol' else 1)
-    high_val_warning = lambda val: "(HIGH VALUE)" if val > 5000 else ""
-    label = f"{float(amount):.2f} {currency.upper()} {high_val_warning(usd_value)}"
-
-    # Custom title with tooltip & click-to-copy JavaScript
-    sender_html = f"""
-    <b>{sender}</b><br>
-    <a href='https://solscan.io/account/{sender}' target='_blank'>View on Solscan</a><br>
-    <button onclick="navigator.clipboard.writeText('{sender}')">Copy</button><br>
-    <button onclick="hideNode('{sender}')">❌ Hide</button>
-    """
-
-    receiver_html = f"""
-    <b>{receiver}</b><br>
-    <a href='https://solscan.io/account/{receiver}' target='_blank'>View on Solscan</a><br>
-    <button onclick="navigator.clipboard.writeText('{receiver}')">Copy</button><br>
-    <button onclick="hideNode('{receiver}')">❌ Hide</button>
-    """
-    #label nodes with high sol value ( probably exchange)
-    HIGH_BAL = 1000
-    if sender not in seen_nodes:
-        balance = getBal.get_sol_balance_quicknode(sender)
-        seen_nodes[sender] = balance
-    if receiver not in seen_nodes:
-        balance = getBal.get_sol_balance_quicknode(receiver)
-        seen_nodes[receiver] = balance
-
-    # Determine color based on balance
-    sender_color = 'red' if seen_nodes[sender] > HIGH_BAL else None
-    receiver_color = 'red' if seen_nodes[receiver] > HIGH_BAL else None
-
-    net.add_node(sender, label=sender[:6] + "..." + sender[-4:] + f" {float(seen_nodes[sender]):.2f} SOL", title=sender_html, font={'size': 20},color=sender_color)
-    net.add_node(receiver, label=receiver[:6] + "..." + receiver[-4:] + f" {float(seen_nodes[receiver]):.2f} SOL", title=receiver_html, font={'size': 20},color=receiver_color)
-
-    net.add_edge(sender, receiver, label=label, title=label,font={'size': 40})
-
-# Write and open the HTML
-html_file = f"wallet_graph_{user}.html"
-net.write_html(html_file, notebook=False, open_browser=True)
-with open(html_file, 'r', encoding='utf-8') as f:
-    html = f.read()
-
-# JavaScript to hide a node and its edges
-inject_script = """
-<script>
-function hideNode(nodeId) {
-    var network = window.network;
-    if (!network) return;
-
-    var updateArray = [];
-    var connectedEdges = network.getConnectedEdges(nodeId);
-
-    // Hide node
-    updateArray.push({id: nodeId, hidden: true});
-
-    // Optionally hide edges too
-    connectedEdges.forEach(function(edgeId) {
-        updateArray.push({id: edgeId, hidden: true});
-    });
-
-    network.body.data.nodes.update(updateArray.filter(obj => obj.id in network.body.nodes || obj.id in network.body.edges));
-}
-</script>
-"""
-
-# Insert the script before </body>
-html = html.replace("</body>", inject_script + "\n</body>")
-
-# Save updated HTML
-with open(html_file, 'w', encoding='utf-8') as f:
-    f.write(html)'''
-
-
 G = nx.Graph()
 net = Network(height='1200px', width='100%', notebook=False, directed=False)
 net.barnes_hut()
-
 
 # Aggregation map
 edge_data = defaultdict(lambda: {
@@ -212,8 +125,10 @@ edge_data = defaultdict(lambda: {
 seen_nodes = {}
 HIGH_BAL = 1000
 MIN_TX_COUNT = 1  # only show edge if in or out count >= this
-seen_wallet_cache = []
+seen_wallet_cache = [] #i can use seen nodes but i rather decouple this for now
 cex_wallets = []
+
+
 for sender, currency, amount, receiver in filtered_txns:
     #need to make sure the wallet of question is in the receiver or sender side
     if sender is user or receiver is  user:
@@ -323,13 +238,11 @@ with open(html_file, 'w', encoding='utf-8') as f:
 
 #need a good transaction parsing function
 #the data structure returned will be something like  [{amount,time},...]
-#will pre process the data from each wallet then we will us ethat to build transaction chart.
-
-
-#make a modidifed version where it will automatically check the new wallets and explore to dethp x
+#will pre-process the data from each wallet then we will us that to build transaction chart.
+#make a modified version where it will automatically check the new wallets and explore to depth x
 #needs to ignore cex wallets and other defi wallets effectively.
 #we want to find connections to actual trader
-#filer by transfer voluem and counts
-#then for each trader maybe comput their pnl and most impressive wins idk?
+#filer by transfer volume and counts
+#then for each trader maybe compute their pnl and most impressive wins idk?
 
-#needs a comprehenshive db result too  for future analysis
+#needs a comprehensive db result too  for future analysis
