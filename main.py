@@ -92,7 +92,7 @@ def pre_process_transaction_list(tx_list):
     compiled_result = []
     for tx in tx_list:
         if 'transferred' in tx['description'] and 'multiple accounts' not in tx['description']:
-            print(tx['description'])
+            #print(tx['description'])
             res = parse_transaction(tx['description'])
             if res is not None:
                 compiled_result.append(res)
@@ -110,11 +110,10 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
             continue  # Skip unsupported currency
         if usd_value >= min_usd:
             filtered.append([sender, currency.lower(), f"{amount:.8f}", receiver])
-
     return filtered
 
 
-first_node = "4cdeXtdPNhrPSGP8yxFk7Lc99Fc7KXEkwR2QjRzssGpt"
+first_node = "FaHwTopRKVkVeTQ6JcvDRngLQ9qmZLLbu9eJQdVeDiMh"
 
 #here we append the starting node to the stack
 
