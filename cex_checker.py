@@ -94,7 +94,6 @@ def analyze_avg_tx_time(wallet_address):
     return False
 
 def check_for_cex(wallet_address):
-    #before this check fast chase for labaled adressed to be a confirmed cex
     if not os.path.isfile(filename):
         return []
     with open(filename, mode='r') as csvfile:
@@ -110,5 +109,6 @@ def check_for_cex(wallet_address):
             writer = csv.writer(csvfile)
             if not file_exists:
                 writer.writerow(['solana_address'])  # header
-                writer.writerow([wallet_address])
+            writer.writerow([wallet_address])
     return result
+
