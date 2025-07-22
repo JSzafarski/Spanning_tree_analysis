@@ -4,17 +4,12 @@ import networkx as nx
 import getBal
 from pyvis.network import Network
 from collections import defaultdict
-from cex_checker import analyze_avg_tx_time
-
+from cex_checker import check_for_cex
 #lets first focus on reading the transaction data (transfers fo usdc.usdt,sol,wsol)
-
 SOL_PRICE = 170
-
 # I will be adding the ability to automatically build a spanning tree of all associated wallets based on th params i setout
 #for now I will decide the end criteria to be at most max number of seen nodes eg9 max 50 )
 visited_nodes = set() # set since each wallet needs to be unique
-
-
 
 class NodeStack:
     def __init__(self):
@@ -113,7 +108,7 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
     return filtered
 
 
-first_node = "FaHwTopRKVkVeTQ6JcvDRngLQ9qmZLLbu9eJQdVeDiMh"
+first_node = "GpJDQbew3J5KhSUMYiHCSJ2ZTxZjoDAxGzqNMjLGwLui"
 
 #here we append the starting node to the stack
 
@@ -171,12 +166,12 @@ while True:
             node_a, node_b = sorted([sender, receiver])  # always same order
 
             if sender not in seen_wallet_cache: #this is to help label cex wallets
-                check = analyze_avg_tx_time(sender)
+                check = check_for_cex(sender)
                 seen_wallet_cache.append(sender)
                 if check:
                     cex_wallets.append(sender)
             if receiver not in seen_wallet_cache:
-                check = analyze_avg_tx_time(receiver)
+                check = check_for_cex(receiver)
                 seen_wallet_cache.append(receiver)
                 if check:
                     cex_wallets.append(receiver)
@@ -191,7 +186,7 @@ while True:
 # Step 1: Aggregate transfers between nodes
 for (node1, node2), values in edge_data.items():
     # Skip edge if both directions are below threshold
-    if values["from_to_count"] >= MIN_TX_COUNT or values["to_from_count"] >= MIN_TX_COUNT: #change to or later ( testing now )
+    if values["from_to_count"] < MIN_TX_COUNT and values["to_from_count"] < MIN_TX_COUNT: #change to or later ( testing now )
         #also consider low bal transactions
         continue
 
