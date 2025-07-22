@@ -241,7 +241,6 @@ net.write_html(html_file, notebook=False, open_browser=True)
 # Inject JS for hideNode()
 with open(html_file, 'r', encoding='utf-8') as f:
     html = f.read()
-
 inject_script = """
 <script>
 function hideNode(nodeId) {
