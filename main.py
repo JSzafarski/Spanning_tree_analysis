@@ -5,7 +5,8 @@ import getBal
 from pyvis.network import Network
 from collections import defaultdict
 from cex_checker import check_for_cex
-#lets first focus on reading the transaction data (transfers fo usdc.usdt,sol,wsol)
+import time
+#lets first focus on reading the transaction data (transfers fo USDC , USDT , sol , wsol)
 SOL_PRICE = 170
 # I will be adding the ability to automatically build a spanning tree of all associated wallets based on th params i setout
 #for now I will decide the end criteria to be at most max number of seen nodes eg9 max 50 )
@@ -49,6 +50,7 @@ def fetch_all_transactions(wallet_address):
     all_transactions = []
 
     while True:
+        time.sleep(.1)
         if last_signature:
             url = f"{base_url}&before={last_signature}"
 
@@ -150,7 +152,7 @@ while True:
     visited_nodes.add(current_node)
     transactions = fetch_all_transactions(current_node) # dont need to consider None value since above handles this anyway
     processed_txs = pre_process_transaction_list(transactions)
-    filtered_txns = filter_transactions_by_usd(processed_txs, 50, sol_price=SOL_PRICE)
+    filtered_txns = filter_transactions_by_usd(processed_txs, 100, sol_price=SOL_PRICE)
 
     for sender, currency, amount, receiver in filtered_txns:
         #need to make sure the wallet of question is in the receiver or sender side

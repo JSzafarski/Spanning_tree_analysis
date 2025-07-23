@@ -5,7 +5,8 @@ import csv
 import os
 #need to check sns names too
 cex_keywords = ['binance','okx','crypto.com','bybit','coinbase','stake.com',
-                 'stake','bitmart','mexc','bitget','kraken','Exchange','Robinhood','Backpack','Kucoin','Gate.io']
+                'stake','bitmart','mexc','bitget','kraken','exchange','robinhood','backpack','kucoin',
+                'gate.io','vault','exchange wallet']
 
 filename = 'cex_addresses.csv'
 
