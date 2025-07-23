@@ -90,7 +90,7 @@ def analyze_avg_tx_time(wallet_address):
     # Calculate time differences
     diffs = [timestamps[i] - timestamps[i + 1] for i in range(len(timestamps) - 1)]
     avg_diff = sum(diffs) / len(diffs)
-    if avg_diff<5:
+    if avg_diff<=60:
         return True
     return False
 

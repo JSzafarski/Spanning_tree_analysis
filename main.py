@@ -110,7 +110,7 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
     return filtered
 
 
-first_node = "9VxJw5ngvTfv3SkBZnfn2bMk8H29QXMgA6MfGtuHkZhx"
+first_node = "FRyKAMFzSa3RYBCuLfeBJQfAZQYw1kFzcAF1Y9KDfmbw"
 
 #here we append the starting node to the stack
 
