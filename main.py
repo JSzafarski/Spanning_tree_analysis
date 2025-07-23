@@ -140,6 +140,7 @@ cex_wallets = []
 MAX_SEEN_NODES = 50
 while True:
     if wallet_stack.size() == 0 or len(visited_nodes) >= MAX_SEEN_NODES:
+        print('ending traversal due to end conditions being met')
         break # ending the traversal
     print(wallet_stack)
     current_node = wallet_stack.pop()
