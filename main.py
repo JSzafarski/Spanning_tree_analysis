@@ -108,7 +108,7 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
     return filtered
 
 
-first_node = "GpJDQbew3J5KhSUMYiHCSJ2ZTxZjoDAxGzqNMjLGwLui"
+first_node = "9VxJw5ngvTfv3SkBZnfn2bMk8H29QXMgA6MfGtuHkZhx"
 
 #here we append the starting node to the stack
 
@@ -176,7 +176,7 @@ while True:
                 if check:
                     cex_wallets.append(receiver)
 
-            if sender < receiver:
+            if sender < receiver and sender not in cex_wallets and receiver not in cex_wallets:
                 edge_data[(node_a, node_b)]["from_to_usd"] += usd_value
                 edge_data[(node_a, node_b)]["from_to_count"] += 1
             else:
