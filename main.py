@@ -110,7 +110,7 @@ def filter_transactions_by_usd(transactions, min_usd, sol_price=170):
     return filtered
 
 
-first_node = "86ssNTYmFVux4NABe22hjjicVsgLzaNfgQzLa1ScicPg"
+first_node = "UbQzaTk65Gx8boPWdDgwsLNNZ6eQ2PD1RHmaFMqkLy4"
 
 #here we append the starting node to the stack
 
@@ -137,7 +137,7 @@ HIGH_BAL = 1000
 MIN_TX_COUNT = 1  # only show edge if in or out count >= this
 seen_wallet_cache = [] #i can use seen nodes but i rather decouple this for now
 cex_wallets = []
-MAX_SEEN_NODES = 50
+MAX_SEEN_NODES = 150
 while True:
     if wallet_stack.size() == 0 or len(visited_nodes) >= MAX_SEEN_NODES:
         print('ending traversal due to end conditions being met')
@@ -146,14 +146,14 @@ while True:
     current_node = wallet_stack.pop()
     sol_balance = getBal.get_sol_balance_quicknode(current_node)
     print(f"{sol_balance} SOL in {current_node}")
-    if current_node in cex_wallets or sol_balance > 1000: #for now we assume cex >1000
+    if current_node in cex_wallets or sol_balance > 3000: #for now we assume cex >1000
         print(f'omitted {current_node} since it is likely a cex wallet')
         continue # we will ommit it ( since its a cex)
     print(f"current node: {current_node}")
     visited_nodes.add(current_node)
     transactions = fetch_all_transactions(current_node) # dont need to consider None value since above handles this anyway
     processed_txs = pre_process_transaction_list(transactions)
-    filtered_txns = filter_transactions_by_usd(processed_txs, 100, sol_price=SOL_PRICE)
+    filtered_txns = filter_transactions_by_usd(processed_txs, 1000, sol_price=SOL_PRICE)
 
     for sender, currency, amount, receiver in filtered_txns:
         #need to make sure the wallet of question is in the receiver or sender side

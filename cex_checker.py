@@ -47,7 +47,7 @@ async def get_solscan_labels(address: str):
         await browser.close()
         return tags
 
-def is_cex_related(tags):
+def is_cex_related(tags,wallet):
     all_texts = tags
     all_texts = [t.lower() for t in all_texts]
     matches = []
@@ -62,7 +62,7 @@ def is_cex_related(tags):
         print("Likely CEX wallet — matched:", matches)
         return True
     else:
-        print("No CEX match — likely private or unknown wallet")
+        print("No CEX match — likely private or unknown wallet: ",wallet)
         return False
 
 
@@ -103,7 +103,7 @@ def check_for_cex(wallet_address):
         cex_list = [row[0] for row in reader if row]
     if wallet_address in cex_list:
         return True
-    result = is_cex_related(asyncio.run(get_solscan_labels(wallet_address)))
+    result = is_cex_related(asyncio.run(get_solscan_labels(wallet_address)),wallet_address)
     if result:
         file_exists = os.path.isfile(filename)
         with open(filename, mode='a', newline='') as csvfile:
